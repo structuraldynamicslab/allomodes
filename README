@@ -1,0 +1,99 @@
+AlloModes is a program that optimizes the force constants K_ij of the links in an elastic 
+network to match a known allosteric response.
+
+1) To compile the program
+==========================
+
+A Makefile is provided; this Makefile assumes that you have the Intel compiler and the 
+corresponding MKL library. If you do, and the compiler and library have been installed
+under /opt, then just typing:
+make
+should compile the program and generate the executable, AlloModes.exe. Note that this
+executable will run in parallel, using all cores available on the computer.
+
+If you have problem compiling, just contact me.
+
+2) Running the program
+==========================
+
+If you type
+
+./AlloModes.exe
+
+you will get this welcome screen that describes all the options of the program:
+
+  ==========================================================================================
+  ==========================================================================================
+  =                                                                                        =
+  =                                        AlloModes                                       =
+  =                                                                                        =
+  =     AlloModes finds allosteric paths using  the concept of normal mode analysis        =
+  =                                                                                        =
+  =     Usage:                                                                             =
+  =                                                                                        =
+  =     AlloModes.exe -i <pdb file> -o <res. file> -t <target> -l <ligand> -s <active>     =
+  =      [ -e network> -k <Kconst> -c <cutoff> -a <flag_atom> -m <flag_mass> -n <nmodes>   =
+  =      -r <ncycles> ]                                                                    =
+  =                                                                                        =
+  =     with:                                                                              =
+  =          -i <pdb file> ......path name to input PDB file                               =
+  =          -o <res. file> .....path name to result file                                  =
+  =          -t <target file>... path name to PDB file for target struct.                  =
+  =          -l <ligand> ........PDB file for ligand pocket                                =
+  =          -s <active> ........PDB file for active site                                  =
+  =     Optional arguments:                                                                =
+  =          -e <network>........cutoff-based (1) or Delaunay (2) network (default 1)      =
+  =          -k <Kconst> ........Force constant for springs (elastic pot.) (default 1.0)   =
+  =          -c <cutoff> ........cutoff for elastic network (only if e = 1) (default 10.0) =
+  =          -a <flag_atom>..... select CA (0), backbone (1) or all heavy atoms (2)        =
+  =                              for elastic network (default 0)                           =
+  =          -m <flag_mass>..... mass-weighted (1) or  not (0) (default 1)                 =
+  =          -n <nmodes>........ number of modes to  keep (default 100)                    =
+  =          -r <ncycles>....... number of cycles to  refine kvals (default 100)           =
+  =                                                                                        =
+  ==========================================================================================
+  ==========================================================================================
+
+Some explanation about these options:
+=====================================
+
+- options -i and -t allows you to provide the names of the PDB files for the start and target
+                    conformations of the protein of interest, respectively, where the 
+		    change of conformation is induced by allostery.
+
+- option -o         defines the basename BASE of all the result files:
+			- BASE_bfact.dat  : comparison of the B-factors (experimental and
+			                    computed, based on the input k_ij
+			- BASE_overlap.dat: overlap between a normal mode and the change
+					    of conformation start -> target, for all
+					    normal modes	
+			- BASE.log	  : log file for the run
+			- BASE.eln	  : final elastic network
+			- BASE.pml	  : pymol script to visualize the elastic network
+			- BASE5.pml	  : pymol script to visualize the strongest (5%)
+					    edges of the elastic network
+			- BASE.pdb	  : PDB file with start conformation, with Bfactors
+					    set to be the sum of the force constants of the
+					    links adjacent to the atom of interest.
+- option -l	    PDB file for the atoms that define the allosteric pocket (agonist site)
+- option -s	    PDB file for the atoms that define the target zone (region that is
+		    affected by the binding of a ligand in the allosteric pocket.
+
+Optional:
+=========
+
+- option -e	    defines the type of network considered (1 cutoff, 2 Delaunay); default 1
+- option -k	    defines the initial force constant, i.e.the initial values for all k_ij;
+		    note that this value is scaled first so that the computed B-factors
+		    match with the experimental B-factors
+- option -c	    cutoff for the elastic network, when option e is set to 1; by default 10.0
+- option -a	    flag for atoms considered (0 for CA only, 1 for full backbone, 2 for
+		    heavy atoms)
+- option -m	    mass-weighted normal mode or not; default is mass-weighted
+- option -n	    Number of modes for refining the k_ij. Default is 100.
+- option -r	    Sets the number of steps for lbfgs: non linear optimization using LBFG algorithm,
+		    with trusted region
+
+To perform a typical run on chemotactic Y protein, go to test folder and run:
+=============================================================================
+bash run.sh
